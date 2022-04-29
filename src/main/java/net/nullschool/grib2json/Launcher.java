@@ -20,12 +20,12 @@ import java.util.*;
  *
  * @author Cameron Beccario
  */
-class Launcher {
+public class Launcher {
 
     private static final Logger log = LoggerFactory.getLogger(Launcher.class);
 
     private static void printUsage() {
-        System.out.println(CliFactory.createCli(Options.class).getHelpMessage());
+//        System.out.println(CliFactory.createCli(Options.class).getHelpMessage());
     }
 
     private static <T> T[] merge(T[] a, T[] b) {
@@ -54,7 +54,30 @@ class Launcher {
         return groups;
     }
 
-    public static void main(String[] args) {
+    /**
+     * 
+     * @param inputFile
+     * @param outputFile
+     * @param dataField
+     */
+   	public void transform(String inputFile, String outputFile, String dataField) {
+    	String [] args = new String[13];
+    	args[0] = "--compact";
+    	args[1] = "-c";
+    	args[2] = "--names";
+    	args[3] = "--data";
+    	args[4] = "--fp";
+    	args[5] = dataField;
+    	args[6] = "--fs";
+    	args[7] = "103";
+    	args[8] = "--fv";
+    	args[9] = "10.0";
+    	args[10] = "--output";
+//    	args[11] = "C:\\wind-data.json";
+    	args[11] = outputFile;
+//    	args[12] = "C:\\2022040606gfs.t06z.sfluxgrbf006.grib2";
+    	args[12] = inputFile;
+    	
         try {
             Options options = CliFactory.parseArguments(Options.class, args);
             if (options.getShowHelp() || options.getFile() == null) {
