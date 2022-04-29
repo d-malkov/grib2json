@@ -24,6 +24,8 @@ import static ucar.grib.GribNumbers.*;
  */
 final class GribRecordWriter extends AbstractRecordWriter {
 
+	int filterNumber = 4;
+	
     private final Grib2Record record;
     private final Grib2IndicatorSection ins;
     private final Grib2IdentificationSection ids;
@@ -124,8 +126,8 @@ final class GribRecordWriter extends AbstractRecordWriter {
         write("resolution", gds.getResolution());
         write("winds", isBitSet(gds.getResolution(), BIT_5) ? "relative" : "true");
         write("scanMode", gds.getScanMode());
-        write("nx", gds.getNx());  // Number of points on x-axis or parallel
-        write("ny", gds.getNy());  // Number of points on y-axis or meridian
+        write("nx", gds.getNx() / filterNumber);  // Number of points on x-axis or parallel
+        write("ny", gds.getNy() / filterNumber);  // Number of points on y-axis or meridian
     }
 
     private void writeLonLatBounds() {
@@ -133,8 +135,8 @@ final class GribRecordWriter extends AbstractRecordWriter {
         writeIfSet("la1", gds.getLa1());  // latitude of first grid point
         writeIfSet("lo2", gds.getLo2());  // longitude of last grid point
         writeIfSet("la2", gds.getLa2());  // latitude of last grid point
-        writeIfSet("dx", gds.getDx());    // i direction increment
-        writeIfSet("dy", gds.getDy());    // j direction increment
+        writeIfSet("dx", gds.getDx() * filterNumber);    // i direction increment
+        writeIfSet("dy", gds.getDx() * filterNumber);    // j direction increment
     }
 
     private void writeRotationAndStretch() {
@@ -265,10 +267,18 @@ final class GribRecordWriter extends AbstractRecordWriter {
      */
     void writeData(Grib2Data gd) throws IOException {
         float[] data = gd.getData(record.getGdsOffset(), record.getPdsOffset(), ids.getRefTime());
+        int numberOfValue = 1;
+        int nx = gds.getNx();
+        int numberOfrow = 1;
+
         if (data != null) {
             jg.writeStartArray("data");
             for (float value : data) {
-                jg.write(new FloatValue(value));
+            	numberOfrow = numberOfValue/nx;
+            	if (numberOfValue%filterNumber == 0 && numberOfrow%filterNumber == 0) {
+            		jg.write(new FloatValue(value));
+            	}
+            	numberOfValue++;
             }
             jg.writeEnd();
         }
